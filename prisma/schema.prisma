@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  telegramId  String   @unique
+  username    String?
+  firstName   String?
+  lastName    String?
+  avatarUrl   String?
+  email       String?
+  plan        Plan     @default(FREE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  funnels     Funnel[]
+}
+
+model Funnel {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  status      FunnelStatus @default(DRAFT)
+  userId      String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes       Node[]
+}
+
+model Node {
+  id          String   @id @default(cuid())
+  type        NodeType
+  name        String
+  content     Json?
+  position    Json     @default("{\"x\": 0, \"y\": 0}")
+  funnelId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  funnel      Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum FunnelStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+}
+
+enum NodeType {
+  MESSAGE
+  BUTTON
+  CONDITION
+  DELAY
+  PAYMENT
+}
