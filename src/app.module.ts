@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { FunnelsModule } from './funnels/funnels.module';
 import { NodesModule } from './nodes/nodes.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { BillingModule } from './billing/billing.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TelegramModule } from './telegram/telegram.module';
     FunnelsModule,
     NodesModule,
     TelegramModule,
+    BillingModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

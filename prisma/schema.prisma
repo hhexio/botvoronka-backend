@@ -19,7 +19,9 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  funnels     Funnel[]
+  funnels      Funnel[]
+  subscription Subscription?
+  payments     Payment[]
 }
 
 model Funnel {
@@ -33,6 +35,8 @@ model Funnel {
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   nodes       Node[]
+  payments    Payment[]
+  sessions    FunnelSession[]
 }
 
 model Node {
@@ -65,4 +69,75 @@ enum NodeType {
   CONDITION
   DELAY
   PAYMENT
+}
+
+model Subscription {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      Plan      @default(FREE)
+  status    SubStatus @default(ACTIVE)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  oderId          String        @unique // ID платежа от ЮKassa
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Int           // В копейках (4990.00 = 499000)
+  currency        String        @default("RUB")
+  status          PaymentStatus @default(PENDING)
+  description     String?
+  paymentMethod   String?       // bank_card, yoo_money, etc
+  confirmationUrl String?       // URL для оплаты
+  funnelId        String?       // Если платёж за прохождение воронки
+  funnel          Funnel?       @relation(fields: [funnelId], references: [id])
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model FunnelSession {
+  id            String        @id @default(cuid())
+  visitorId     String        // Telegram user ID посетителя
+  visitorName   String?       // Имя из Telegram
+  funnelId      String
+  funnel        Funnel        @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  currentNodeId String?       // Текущий узел
+  status        SessionStatus @default(ACTIVE)
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+  paidAt        DateTime?
+  paidAmount    Int?          // Сумма оплаты если была
+  data          Json?         // Данные собранные в процессе
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([funnelId])
+  @@index([visitorId])
+}
+
+enum SubStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+enum PaymentStatus {
+  PENDING
+  WAITING_FOR_CAPTURE
+  SUCCEEDED
+  CANCELLED
+  REFUNDED
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+  PAID
 }
