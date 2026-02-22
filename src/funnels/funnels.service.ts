@@ -14,39 +14,49 @@ export class FunnelsService {
 
   // Шаблоны воронок
   private readonly templates = {
-    course: {
-      name: 'Продажа курса',
-      description: 'Шаблон для продажи онлайн-курса',
-      nodes: [
-        { type: 'MESSAGE', name: 'Приветствие', content: { text: 'Привет! 👋 Добро пожаловать на мой курс.' } },
-        { type: 'MESSAGE', name: 'О курсе', content: { text: 'В этом курсе вы узнаете...' } },
-        { type: 'BUTTON', name: 'Выбор', content: { text: 'Хотите узнать больше?', buttons: [{ text: 'Да, расскажите!' }] } },
-        { type: 'PAYMENT', name: 'Оплата', content: { productName: 'Онлайн-курс', price: 4990 } },
-        { type: 'MESSAGE', name: 'Спасибо', content: { text: 'Спасибо за покупку! Вот ваш доступ...' } },
-      ],
-    },
     consultation: {
       name: 'Запись на консультацию',
-      description: 'Шаблон для записи на консультацию',
+      description: 'Воронка для записи клиентов на консультацию',
       nodes: [
         { type: 'MESSAGE', name: 'Приветствие', content: { text: 'Здравствуйте! Я помогу записать вас на консультацию.' } },
-        { type: 'MESSAGE', name: 'Описание', content: { text: 'На консультации мы разберём...' } },
+        { type: 'MESSAGE', name: 'Описание', content: { text: 'На консультации мы разберём вашу ситуацию и составим план действий.' } },
         { type: 'PAYMENT', name: 'Оплата', content: { productName: 'Консультация 60 мин', price: 2990 } },
         { type: 'MESSAGE', name: 'Подтверждение', content: { text: 'Отлично! Я свяжусь с вами для выбора времени.' } },
       ],
     },
+    course: {
+      name: 'Продажа курса',
+      description: 'Воронка для продажи онлайн-курса',
+      nodes: [
+        { type: 'MESSAGE', name: 'Приветствие', content: { text: '👋 Привет! Хочешь освоить новый навык?' } },
+        { type: 'MESSAGE', name: 'Боль', content: { text: 'Многие тратят годы на самообучение и не получают результата...' } },
+        { type: 'MESSAGE', name: 'Решение', content: { text: 'Мой курс поможет тебе за 30 дней получить конкретный результат!' } },
+        { type: 'PAYMENT', name: 'Оплата', content: { productName: 'Онлайн-курс', price: 9990 } },
+        { type: 'MESSAGE', name: 'Успех', content: { text: '🎉 Добро пожаловать! Доступ к курсу отправлен на почту.' } },
+      ],
+    },
     leadmagnet: {
       name: 'Лид-магнит',
-      description: 'Бесплатный материал для сбора контактов',
+      description: 'Бесплатный материал в обмен на контакт',
       nodes: [
-        { type: 'MESSAGE', name: 'Приветствие', content: { text: 'Привет! У меня есть для тебя подарок 🎁' } },
-        { type: 'MESSAGE', name: 'Описание', content: { text: 'Это бесплатный гайд/чеклист/...' } },
-        { type: 'MESSAGE', name: 'Выдача', content: { text: 'Держи ссылку на материал: ...' } },
+        { type: 'MESSAGE', name: 'Предложение', content: { text: '🎁 Получи бесплатный чек-лист "10 секретов успеха"!' } },
+        { type: 'BUTTON', name: 'Получить', content: { text: 'Нажми кнопку чтобы получить:', buttons: [{ text: '📥 Получить чек-лист', action: 'next' }] } },
+        { type: 'MESSAGE', name: 'Доставка', content: { text: '✅ Отлично! Вот твой чек-лист: [ссылка]\n\nПодпишись на канал, чтобы не пропустить новые материалы!' } },
+      ],
+    },
+    webinar: {
+      name: 'Регистрация на вебинар',
+      description: 'Воронка для регистрации на вебинар',
+      nodes: [
+        { type: 'MESSAGE', name: 'Анонс', content: { text: '🔥 Приглашаю на бесплатный вебинар!\n\nТема: "Как достичь цели за 90 дней"\nДата: Суббота, 19:00' } },
+        { type: 'BUTTON', name: 'Регистрация', content: { text: 'Хочешь участвовать?', buttons: [{ text: '✅ Да, регистрируюсь!', action: 'next' }, { text: '❌ Не сейчас', action: 'end' }] } },
+        { type: 'MESSAGE', name: 'Подтверждение', content: { text: '👍 Отлично! Ты зарегистрирован.\n\nСсылка на вебинар придёт за час до начала.' } },
+        { type: 'DELAY', name: 'Напоминание', content: { seconds: 3600, message: '⏰ Напоминаем: вебинар начнётся через час!' } },
       ],
     },
     empty: {
       name: 'Пустая воронка',
-      description: 'Начните с чистого листа',
+      description: 'Начни с чистого листа',
       nodes: [],
     },
   };
