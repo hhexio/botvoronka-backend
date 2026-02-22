@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -22,7 +26,8 @@ export class BillingService {
     private config: ConfigService,
   ) {
     this.shopId = this.config.get<string>('YOKASSA_SHOP_ID') || 'demo_shop';
-    this.secretKey = this.config.get<string>('YOKASSA_SECRET_KEY') || 'demo_key';
+    this.secretKey =
+      this.config.get<string>('YOKASSA_SECRET_KEY') || 'demo_key';
     this.isProduction = this.config.get<string>('NODE_ENV') === 'production';
   }
 
@@ -140,7 +145,8 @@ export class BillingService {
           },
           confirmation: {
             type: 'redirect',
-            return_url: dto.returnUrl || 'https://botvoronka.ru/billing/success',
+            return_url:
+              dto.returnUrl || 'https://botvoronka.ru/billing/success',
           },
           capture: true,
           description: dto.description,
@@ -154,7 +160,9 @@ export class BillingService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new BadRequestException(data.description || 'Payment creation failed');
+        throw new BadRequestException(
+          data.description || 'Payment creation failed',
+        );
       }
 
       // Сохраняем платёж в БД
@@ -221,7 +229,10 @@ export class BillingService {
     });
 
     // Если платёж успешен — активируем подписку
-    if (newStatus === 'SUCCEEDED' && payment.description?.includes('Подписка')) {
+    if (
+      newStatus === 'SUCCEEDED' &&
+      payment.description?.includes('Подписка')
+    ) {
       await this.prisma.subscription.upsert({
         where: { userId: payment.userId },
         update: {

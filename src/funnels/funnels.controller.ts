@@ -48,7 +48,11 @@ export class FunnelsController {
     @CurrentUser() user: User,
     @Body() body: { templateId: string; name?: string },
   ) {
-    return this.funnelsService.createFromTemplate(user.id, body.templateId, body.name);
+    return this.funnelsService.createFromTemplate(
+      user.id,
+      body.templateId,
+      body.name,
+    );
   }
 
   @Post()

@@ -20,7 +20,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     if (!this.bot) {
-      console.warn('⚠️  TELEGRAM_BOT_TOKEN not configured - bot features disabled');
+      console.warn(
+        '⚠️  TELEGRAM_BOT_TOKEN not configured - bot features disabled',
+      );
       return;
     }
 
@@ -40,11 +42,14 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         await this.handleText(ctx);
       });
 
-      this.bot.launch().then(() => {
-	console.log('✅ Telegram bot started');
-      }).catch((error) => {
-	console.error('❌ Failed to start Telegram bot:', error.message);
-      });
+      this.bot
+        .launch()
+        .then(() => {
+          console.log('✅ Telegram bot started');
+        })
+        .catch((error) => {
+          console.error('❌ Failed to start Telegram bot:', error.message);
+        });
     } catch (error) {
       console.error('❌ Failed to start Telegram bot:', error.message);
     }
@@ -63,8 +68,8 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     if (!startPayload) {
       await ctx.reply(
         '👋 Добро пожаловать в BotVoronka!\n\n' +
-        'Это бот для прохождения воронок продаж.\n' +
-        'Перейдите по ссылке от автора воронки, чтобы начать.'
+          'Это бот для прохождения воронок продаж.\n' +
+          'Перейдите по ссылке от автора воронки, чтобы начать.',
       );
       return;
     }
@@ -166,7 +171,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (!session) {
-      await ctx.reply('У вас нет активной воронки. Перейдите по ссылке, чтобы начать.');
+      await ctx.reply(
+        'У вас нет активной воронки. Перейдите по ссылке, чтобы начать.',
+      );
       return;
     }
 
@@ -200,7 +207,11 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   // Перейти к следующему узлу
-  private async goToNextNode(ctx: Context, visitorId: string, sessionId: string) {
+  private async goToNextNode(
+    ctx: Context,
+    visitorId: string,
+    sessionId: string,
+  ) {
     const session = await this.prisma.funnelSession.findUnique({
       where: { id: sessionId },
       include: {
@@ -213,7 +224,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     if (!session || session.visitorId !== visitorId) return;
 
     const nodes = session.funnel.nodes;
-    const currentIndex = nodes.findIndex(n => n.id === session.currentNodeId);
+    const currentIndex = nodes.findIndex((n) => n.id === session.currentNodeId);
 
     if (currentIndex === -1 || currentIndex >= nodes.length - 1) {
       // Воронка завершена
@@ -244,7 +255,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     await ctx.reply(
       '🎉 Поздравляем! Вы прошли воронку до конца.\n\n' +
-      'Спасибо за внимание!'
+        'Спасибо за внимание!',
     );
   }
 
@@ -266,22 +277,28 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         if (buttons.length > 0) {
           await ctx.reply(content.text || 'Выберите действие:', {
             reply_markup: {
-              inline_keyboard: buttons.map((btn: any) => ([{
-                text: btn.text,
-                callback_data: btn.nextNodeId
-                  ? `node_${btn.nextNodeId}`
-                  : `next_${session.id}`,
-              }])),
+              inline_keyboard: buttons.map((btn: any) => [
+                {
+                  text: btn.text,
+                  callback_data: btn.nextNodeId
+                    ? `node_${btn.nextNodeId}`
+                    : `next_${session.id}`,
+                },
+              ]),
             },
           });
         } else {
           // Если кнопок нет — показываем кнопку "Далее"
           await ctx.reply(content.text || 'Продолжить?', {
             reply_markup: {
-              inline_keyboard: [[{
-                text: 'Далее →',
-                callback_data: `next_${session.id}`,
-              }]],
+              inline_keyboard: [
+                [
+                  {
+                    text: 'Далее →',
+                    callback_data: `next_${session.id}`,
+                  },
+                ],
+              ],
             },
           });
         }
@@ -299,18 +316,22 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         // TODO: Интеграция с BillingService для создания платежа
         await ctx.reply(
           `💳 **Оплата**\n\n` +
-          `📦 ${content.productName || 'Товар'}\n` +
-          `💰 Цена: ${content.price || 0}₽\n\n` +
-          `(Интеграция с оплатой в разработке)`,
+            `📦 ${content.productName || 'Товар'}\n` +
+            `💰 Цена: ${content.price || 0}₽\n\n` +
+            `(Интеграция с оплатой в разработке)`,
           {
             parse_mode: 'Markdown',
             reply_markup: {
-              inline_keyboard: [[{
-                text: '✅ Оплатить (демо)',
-                callback_data: `next_${session.id}`,
-              }]],
+              inline_keyboard: [
+                [
+                  {
+                    text: '✅ Оплатить (демо)',
+                    callback_data: `next_${session.id}`,
+                  },
+                ],
+              ],
             },
-          }
+          },
         );
 
         // В реальности здесь будет:

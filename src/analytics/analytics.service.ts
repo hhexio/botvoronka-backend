@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 
@@ -24,7 +28,11 @@ export class AnalyticsService {
   }
 
   // Получить аналитику воронки
-  async getFunnelAnalytics(funnelId: string, userId: string, query: AnalyticsQueryDto) {
+  async getFunnelAnalytics(
+    funnelId: string,
+    userId: string,
+    query: AnalyticsQueryDto,
+  ) {
     await this.checkFunnelAccess(funnelId, userId);
 
     const { from, to } = query;
@@ -50,22 +58,22 @@ export class AnalyticsService {
 
     // Считаем метрики
     const totalStarted = sessions.length;
-    const completed = sessions.filter(s => s.status === 'COMPLETED' || s.status === 'PAID').length;
-    const paid = sessions.filter(s => s.status === 'PAID').length;
-    const abandoned = sessions.filter(s => s.status === 'ABANDONED').length;
-    const active = sessions.filter(s => s.status === 'ACTIVE').length;
+    const completed = sessions.filter(
+      (s) => s.status === 'COMPLETED' || s.status === 'PAID',
+    ).length;
+    const paid = sessions.filter((s) => s.status === 'PAID').length;
+    const abandoned = sessions.filter((s) => s.status === 'ABANDONED').length;
+    const active = sessions.filter((s) => s.status === 'ACTIVE').length;
 
     const totalRevenue = sessions
-      .filter(s => s.paidAmount)
+      .filter((s) => s.paidAmount)
       .reduce((sum, s) => sum + (s.paidAmount || 0), 0);
 
     // Конверсии
-    const conversionToComplete = totalStarted > 0
-      ? ((completed / totalStarted) * 100).toFixed(2)
-      : '0.00';
-    const conversionToPaid = totalStarted > 0
-      ? ((paid / totalStarted) * 100).toFixed(2)
-      : '0.00';
+    const conversionToComplete =
+      totalStarted > 0 ? ((completed / totalStarted) * 100).toFixed(2) : '0.00';
+    const conversionToPaid =
+      totalStarted > 0 ? ((paid / totalStarted) * 100).toFixed(2) : '0.00';
 
     // Группировка по дням для графика
     const dailyStats = this.groupByDay(sessions);
@@ -82,7 +90,7 @@ export class AnalyticsService {
         conversionToPaid: `${conversionToPaid}%`,
       },
       dailyStats,
-      recentSessions: sessions.slice(0, 20).map(s => ({
+      recentSessions: sessions.slice(0, 20).map((s) => ({
         id: s.id,
         visitorName: s.visitorName || 'Аноним',
         status: s.status,
@@ -95,9 +103,12 @@ export class AnalyticsService {
 
   // Группировка сессий по дням
   private groupByDay(sessions: any[]) {
-    const grouped: Record<string, { started: number; completed: number; paid: number; revenue: number }> = {};
+    const grouped: Record<
+      string,
+      { started: number; completed: number; paid: number; revenue: number }
+    > = {};
 
-    sessions.forEach(session => {
+    sessions.forEach((session) => {
       const day = session.startedAt.toISOString().split('T')[0];
 
       if (!grouped[day]) {
@@ -138,10 +149,13 @@ export class AnalyticsService {
     });
 
     return {
-      sessions: sessions.reduce((acc, s) => {
-        acc[s.status.toLowerCase()] = s._count;
-        return acc;
-      }, {} as Record<string, number>),
+      sessions: sessions.reduce(
+        (acc, s) => {
+          acc[s.status.toLowerCase()] = s._count;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
       nodeDropoffs,
     };
   }
@@ -164,7 +178,10 @@ export class AnalyticsService {
       include: {
         _count: { select: { nodes: true } },
         sessions: {
-          where: Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : undefined,
+          where:
+            Object.keys(dateFilter).length > 0
+              ? { startedAt: dateFilter }
+              : undefined,
         },
       },
     });
@@ -175,12 +192,14 @@ export class AnalyticsService {
     let totalPaid = 0;
     let totalRevenue = 0;
 
-    const funnelStats = funnels.map(funnel => {
+    const funnelStats = funnels.map((funnel) => {
       const started = funnel.sessions.length;
-      const completed = funnel.sessions.filter(s => s.status === 'COMPLETED' || s.status === 'PAID').length;
-      const paid = funnel.sessions.filter(s => s.status === 'PAID').length;
+      const completed = funnel.sessions.filter(
+        (s) => s.status === 'COMPLETED' || s.status === 'PAID',
+      ).length;
+      const paid = funnel.sessions.filter((s) => s.status === 'PAID').length;
       const revenue = funnel.sessions
-        .filter(s => s.paidAmount)
+        .filter((s) => s.paidAmount)
         .reduce((sum, s) => sum + (s.paidAmount || 0), 0);
 
       totalStarted += started;
@@ -198,7 +217,8 @@ export class AnalyticsService {
           completed,
           paid,
           revenue,
-          conversion: started > 0 ? `${((paid / started) * 100).toFixed(2)}%` : '0.00%',
+          conversion:
+            started > 0 ? `${((paid / started) * 100).toFixed(2)}%` : '0.00%',
         },
       };
     });
@@ -206,14 +226,15 @@ export class AnalyticsService {
     return {
       summary: {
         totalFunnels: funnels.length,
-        activeFunnels: funnels.filter(f => f.status === 'ACTIVE').length,
+        activeFunnels: funnels.filter((f) => f.status === 'ACTIVE').length,
         totalStarted,
         totalCompleted,
         totalPaid,
         totalRevenue,
-        overallConversion: totalStarted > 0
-          ? `${((totalPaid / totalStarted) * 100).toFixed(2)}%`
-          : '0.00%',
+        overallConversion:
+          totalStarted > 0
+            ? `${((totalPaid / totalStarted) * 100).toFixed(2)}%`
+            : '0.00%',
       },
       funnels: funnelStats,
     };
