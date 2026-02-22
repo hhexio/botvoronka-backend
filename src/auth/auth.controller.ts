@@ -16,6 +16,12 @@ export class AuthController {
     return this.authService.telegramLogin(dto);
   }
 
+  @Public()
+  @Post('demo')
+  demoLogin() {
+    return this.authService.demoLogin();
+  }
+
   @UseGuards(JwtGuard)
   @Post('refresh')
   refresh(@CurrentUser() user: User) {

@@ -44,6 +44,28 @@ export class AuthService {
     };
   }
 
+  async demoLogin() {
+    // Создаём или находим демо-пользователя
+    const user = await this.prisma.user.upsert({
+      where: { telegramId: 'demo-user' },
+      update: {},
+      create: {
+        telegramId: 'demo-user',
+        username: 'demo',
+        firstName: 'Demo',
+        lastName: 'User',
+        plan: 'FREE',
+      },
+    });
+
+    const tokens = await this.generateTokens(user.id);
+
+    return {
+      user,
+      ...tokens,
+    };
+  }
+
   async refresh(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -71,6 +93,7 @@ export class AuthService {
     // Проверяем что auth_date не старше 24 часов
     const authDate = dto.auth_date;
     const now = Math.floor(Date.now() / 1000);
+
     if (now - authDate > 86400) {
       throw new UnauthorizedException('Telegram auth data expired');
     }
@@ -80,12 +103,14 @@ export class AuthService {
       .filter(([key]) => key !== 'hash')
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, value]) => `${key}=${value}`);
+
     const checkString = checkArr.join('\n');
 
     // Вычисляем хеш
     const secretKey = createHmac('sha256', 'WebAppData')
       .update(botToken)
       .digest();
+
     const hash = createHmac('sha256', secretKey)
       .update(checkString)
       .digest('hex');
@@ -101,11 +126,11 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(payload, {
         secret: this.config.get('JWT_ACCESS_SECRET'),
-        expiresIn: this.config.get('JWT_ACCESS_EXPIRES_IN'),
+        expiresIn: this.config.get('JWT_ACCESS_EXPIRES_IN') || '15m',
       }),
       this.jwt.signAsync(payload, {
         secret: this.config.get('JWT_REFRESH_SECRET'),
-        expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN'),
+        expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN') || '7d',
       }),
     ]);
 
