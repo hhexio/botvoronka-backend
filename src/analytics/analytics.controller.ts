@@ -28,4 +28,13 @@ export class AnalyticsController {
   ) {
     return this.analyticsService.getFunnelAnalytics(funnelId, user.id, query);
   }
+
+  // GET /api/analytics/funnel/:id/conversions — конверсии и дропоффы
+  @Get('funnel/:id/conversions')
+  getFunnelConversions(
+    @Param('id') funnelId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.analyticsService.getFunnelConversions(funnelId, user.id);
+  }
 }

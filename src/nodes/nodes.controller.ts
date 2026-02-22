@@ -60,4 +60,14 @@ export class NodesController {
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.nodesService.remove(id, user.id);
   }
+
+  // PATCH /api/nodes/:id/reorder
+  @Patch('nodes/:id/reorder')
+  reorder(
+    @Param('id') id: string,
+    @Body() dto: { newOrder: number },
+    @CurrentUser() user: User,
+  ) {
+    return this.nodesService.reorder(id, dto.newOrder, user.id);
+  }
 }

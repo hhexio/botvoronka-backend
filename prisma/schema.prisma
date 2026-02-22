@@ -45,6 +45,7 @@ model Node {
   name        String
   content     Json?
   position    Json     @default("{\"x\": 0, \"y\": 0}")
+  order       Int      @default(0)
   funnelId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

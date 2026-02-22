@@ -128,6 +128,36 @@ export class FunnelsService {
     });
   }
 
+  async duplicate(funnelId: string, userId: string) {
+    const original = await this.prisma.funnel.findFirst({
+      where: { id: funnelId, userId },
+      include: { nodes: { orderBy: { createdAt: 'asc' } } },
+    });
+
+    if (!original) {
+      throw new NotFoundException('Funnel not found');
+    }
+
+    return this.prisma.funnel.create({
+      data: {
+        name: `${original.name} (копия)`,
+        description: original.description,
+        status: 'DRAFT',
+        userId,
+        nodes: {
+          create: original.nodes.map((node) => ({
+            type: node.type,
+            name: node.name,
+            content: node.content as any,
+            position: node.position as any,
+            order: node.order,
+          })),
+        },
+      },
+      include: { nodes: true },
+    });
+  }
+
   // Получить список шаблонов
   getTemplates() {
     return Object.entries(this.templates).map(([key, template]) => ({

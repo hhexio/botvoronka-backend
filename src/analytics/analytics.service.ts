@@ -122,6 +122,30 @@ export class AnalyticsService {
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
+  async getFunnelConversions(funnelId: string, userId: string) {
+    await this.checkFunnelAccess(funnelId, userId);
+
+    const sessions = await this.prisma.funnelSession.groupBy({
+      by: ['status'],
+      where: { funnelId },
+      _count: true,
+    });
+
+    const nodeDropoffs = await this.prisma.funnelSession.groupBy({
+      by: ['currentNodeId'],
+      where: { funnelId, status: 'ABANDONED' },
+      _count: true,
+    });
+
+    return {
+      sessions: sessions.reduce((acc, s) => {
+        acc[s.status.toLowerCase()] = s._count;
+        return acc;
+      }, {} as Record<string, number>),
+      nodeDropoffs,
+    };
+  }
+
   // Общая аналитика по всем воронкам пользователя
   async getUserAnalytics(userId: string, query: AnalyticsQueryDto) {
     const { from, to } = query;

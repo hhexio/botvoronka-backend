@@ -80,6 +80,11 @@ export class FunnelsController {
     };
   }
 
+  @Post(':id/duplicate')
+  duplicate(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.funnelsService.duplicate(id, user.id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.funnelsService.remove(id, user.id);

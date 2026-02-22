@@ -87,4 +87,41 @@ export class NodesService {
       where: { id },
     });
   }
+
+  async reorder(nodeId: string, newOrder: number, userId: string) {
+    const node = await this.prisma.node.findUnique({
+      where: { id: nodeId },
+      include: { funnel: true },
+    });
+
+    if (!node || node.funnel.userId !== userId) {
+      throw new NotFoundException('Node not found');
+    }
+
+    const oldOrder = node.order;
+    const funnelId = node.funnelId;
+
+    if (newOrder > oldOrder) {
+      await this.prisma.node.updateMany({
+        where: {
+          funnelId,
+          order: { gt: oldOrder, lte: newOrder },
+        },
+        data: { order: { decrement: 1 } },
+      });
+    } else {
+      await this.prisma.node.updateMany({
+        where: {
+          funnelId,
+          order: { gte: newOrder, lt: oldOrder },
+        },
+        data: { order: { increment: 1 } },
+      });
+    }
+
+    return this.prisma.node.update({
+      where: { id: nodeId },
+      data: { order: newOrder },
+    });
+  }
 }
