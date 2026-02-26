@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFunnelDto } from './dto/create-funnel.dto';
 import { UpdateFunnelDto } from './dto/update-funnel.dto';
@@ -252,8 +253,8 @@ export class FunnelsService {
           create: original.nodes.map((node) => ({
             type: node.type,
             name: node.name,
-            content: node.content as Record<string, unknown>,
-            position: node.position as Record<string, unknown>,
+            content: node.content as Prisma.InputJsonValue,
+            position: node.position as Prisma.InputJsonValue,
             order: node.order,
           })),
         },
@@ -305,9 +306,9 @@ export class FunnelsService {
             | 'DELAY'
             | 'PAYMENT',
           name: node.name,
-          content: node.content,
+          content: node.content as Prisma.InputJsonValue,
           funnelId: funnel.id,
-          position: { x: 0, y: index * 100 },
+          position: { x: 0, y: index * 100 } as Prisma.InputJsonValue,
         })),
       });
     }
