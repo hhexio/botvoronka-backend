@@ -101,11 +101,16 @@ export class NodesService {
     const oldOrder = node.order;
     const funnelId = node.funnelId;
 
-    if (newOrder > oldOrder) {
+    if (newOrder === oldOrder) return node;
+
+    const totalNodes = await this.prisma.node.count({ where: { funnelId } });
+    const clampedNewOrder = Math.max(0, Math.min(newOrder, totalNodes - 1));
+
+    if (clampedNewOrder > oldOrder) {
       await this.prisma.node.updateMany({
         where: {
           funnelId,
-          order: { gt: oldOrder, lte: newOrder },
+          order: { gt: oldOrder, lte: clampedNewOrder },
         },
         data: { order: { decrement: 1 } },
       });
@@ -113,7 +118,7 @@ export class NodesService {
       await this.prisma.node.updateMany({
         where: {
           funnelId,
-          order: { gte: newOrder, lt: oldOrder },
+          order: { gte: clampedNewOrder, lt: oldOrder },
         },
         data: { order: { increment: 1 } },
       });
@@ -121,7 +126,7 @@ export class NodesService {
 
     return this.prisma.node.update({
       where: { id: nodeId },
-      data: { order: newOrder },
+      data: { order: clampedNewOrder },
     });
   }
 }
